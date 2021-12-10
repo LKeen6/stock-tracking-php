@@ -1,6 +1,6 @@
 <?php
 /**
- * Class to get handle stocks
+ * Class to handle stocks
  *
  * @author jasonc
  */
