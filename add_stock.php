@@ -38,7 +38,7 @@ Page with add form to add stock to database
                     <input type="text" id="stockSymbol" name="stockSymbol" class="form-control">
                 </div>
                 <input type="submit" value="Save" class="btn btn-primary">
-                <input id="cancel" type="button" value="Cancel" class="btn btn-danger"
+                <input id="cancel" type="button" value="Cancel" class="btn btn-danger">
             </form>
         </div>
     </body>

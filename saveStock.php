@@ -3,6 +3,7 @@
 include 'includes/database.php';
 include 'includes/functions.php';
 include 'includes/stocks.php';
+include 'includes/settings.php';
 
 //get the stock symbol from the $_POST variable and convert it to uppercase
 
