@@ -18,12 +18,40 @@ class stocks {
     
     //Class function to save stock symbol to database
     public function saveStock($symbol){
-        
+        try{
+            $stmt = $this->db->prepare("INSERT INTO stocks(stock_symbol) VALUE (:stock_symbol");
+
+            $stmt->bindParam(":stock_symbol", $symbol);
+
+            $stmt->execute();
+            $stmt->closeCursor();
+
+            if($stmt->rowCount() != 0){
+                return 1;
+            }else{
+                return 0;
+            }
+            
+        } catch (Exception $ex) {
+            return 0;
+        }
     }
     
     //Class function to load all stocks from database
     public function loadAllStocks(){
-        
+        try{
+            $stmt = $this->db->prepare("SELECT * FROM stocks");
+            $stmt->execute();
+
+            if($stmt->rowCount() > 0){
+                $this->symbol = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            }
+
+            $stmt->closeCursor();
+
+        } catch (Exception $ex) {
+            return 0;
+        }
     }
     
     //Class function to access the stocks variable from the class
@@ -34,8 +62,7 @@ class stocks {
     //Class function to retrieve stock data from the API
     public function retrieveStockData(){
         try{
-            
-            $results = array();
+             $results = array();
             
             if(!empty($this->symbols)){
                 foreach($this->symbols as $stk){
@@ -85,11 +112,33 @@ class stocks {
     
     //Class function to format the retrieved stock data for graph display
     private function formatStockData($results){
-        
+        $counter = 0;
+        foreach($results as $result){
+            $this->stocks[$result->symbol]['symbol'] = $result->symbol;
+            if($counter <12){
+                $this->stocks[$result->symbol]['data'][] = "['" . $result->period . "', " .
+                $result->strongBuy . ", " . $result->buy . ", " . $result->hold . ", " . 
+                $result->sell . ", " . $result->strongSell . "]"; 
+                $counter++;
+            }   
+
+        }
     }
     
-    //Class funtion to delete stock from database
+    //Class function to delete stock from database
     public function deleteStock($symbol){
-        
+        try{
+            $stmt = $this->db->prepare("DELETE FROM stocks WHERE stock_symbol = :stock_symbol");
+
+            $stmt->bindparam(":stock_symbol", $symbol);
+
+            $stmt->execute();
+            $rowCount = $stmt->rowCount();
+            $stmt->closeCursor();
+
+            return $rowCount;
+        } catch (Exception $ex) {
+            return 0;
+        }
     }
 }

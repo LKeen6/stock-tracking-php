@@ -6,11 +6,15 @@ include 'includes/stocks.php';
 include 'includes/settings.php';
 
 //get the error code if it has been set
+$error = getG('error');
 
 //declare a stocks and instantiate the stocks class
+$stocks = new stocks($db, apiToken);
 
 //load the stocks from the data, retrieve the stocks, and pass stocks to graphData variable
-
+$stocks->loadAllStocks();
+$stocks->retrieveStockData();
+$graphData = $stocks->getAllStocks();
 ?>
 <!DOCTYPE html>
 <!--
@@ -31,6 +35,41 @@ main page for stock tracker project
             // Set a callback to run when the Google Visualization API is loaded.
         <?php
         //iterate through graphData array
+        $counter = 1;
+        foreach ($graphData as $data){
+            $tableData = implode(",\n", $data['data']);
+            ?>
+            google.charts.setOnLoadCallback(drawChart<?php echo $counter;?>);
+
+            
+                //Callback that creates and populates a data table
+                //instantiates the bar chart, passes in the data and
+                //draws it.
+                function drawChart<?php echo $counter;?>(){
+                
+                    //Create the data table.
+                    var data= new google.visualization.arrayToDataTable([
+                        ['stock', 'Strong Buy', 'Buy', 'Hold', 'Sell', 'Strong Sell'],
+                        <?php echo $tableData;?>
+                    
+                    ]);
+
+                    //Set chart options
+                    var options = {'title': '<?php echo strtoupper(addslashes($data['name']));?>',
+                    'width':'100%',
+                    'height': 500,
+                    'legend': {position: 'bottom'},
+                    'chartArea': {width: '90%'},
+                    isStacked: true
+                    };
+
+                    //Instantiate and draw our chart, passing in some options
+                    var chart= new goole.visualization.ColumnChart(document.getElementById('chart_div<?php echo $counter;?>'));
+                    chart.draw(data, options);
+                }
+            <?php
+                $counter++;
+        }
         ?>
     </script>
 
@@ -42,10 +81,28 @@ main page for stock tracker project
                 <div class="mt-2 mb-2"><a href="add_stock.php" class="btn btn-primary" target="_self" title="Add a Stock to Watch">Add a Stock to Watch</a></div>
             <?php
             //display error if it is not equal to zero
-            
+            if($error > 0){
+                ?>
+                <div class="alert alert-danger">There was a problem communicating with the database.</div>
+                <?php
+            }
 
             //create the html needed to display the graphs and create the delete stocks buttons
-            
+            if(!empty($graphData)){
+                for($i = 0; $i < count($graphData); $i++){
+                    $temp = array_values($graphData);
+                    $stkSymbol = $temp[$i]['symbol'];
+                    ?>
+                    <div class="container-fluid border rounded p-3 text-center"><div 
+                    id="chart_div<?php echo $i + 1;?>" class="container-fluid m-2"></div>
+                    <div class="d-flex justify-content-end"><a href="deleteStock.php?stkSymbol=<?php echo $stkSymbol;?>" target="_self" title="Delete <?php echo $stkSymbol;?>"
+                    class="btn btn-danger">Delete <?php echo $stkSymbol;?></a></div></div>
+                    <?php
+                    if($i <count($graphData)){
+                        echo "<hr>";
+                    }
+                }
+            }
             ?>
                 <!-- Button to go to add stock page -->
                 <div class='mt-2 mb-2'><a href="add_stock.php" class="btn btn-primary" target="_self" title="Add a Stock to Watch">Add a Stock to Watch</a></div>
